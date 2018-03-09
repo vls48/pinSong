@@ -23,6 +23,18 @@
         min-height: 200px;
         background-color: lightgrey;
       }
+
+      #yourPinSong{
+        min-width: 200px;
+        min-height: 50px;
+        background-color: rgb(141, 141, 141);
+      }
+      #yourPinSongInfo, #yourPinSongImage{
+        display: inline-block;
+        font-size: 2rem;
+        font-weight: bold;
+      }
+
     </style>
   </head>
 
@@ -60,10 +72,17 @@
     </script>
 
     <form id="search-form"> 
-      <input type='text' id="query" placeholder="search for artist">
+      <input type='text' id="query" placeholder="search for song">
       <input type="submit" id="search" class="btn btn-primary" value="Search">
     </form>
 
+  <div id="yourPinSong">
+      <div id="yourPinSongImage"></div>
+      <div id="yourPinSongInfo"></div>
+  </div>
+
+  </div>
+  </div>
     <div id="results"></div>
   </div>
 
@@ -186,19 +205,42 @@
                   
                   for (var i=0; i<3; i++) {
                   console.log(i);
+                  if (json.tracks.items[i]){
                   trackname = json.tracks.items[i].name;
                   trackartist = json.tracks.items[i].artists[0].name;
                   trackhref = json.tracks.items[i].href;
                   trackimage = json.tracks.items[i].album.images[2].url;
                   divid = '<div id="r' + i;
 
-                  $('#results').append(divid + '" class="track"><li>'+ trackname + '</li><li>' + trackartist + '</li><li>' + trackhref +'</li><img src='+ trackimage +'> <input type="submit" id="p'+ i + '" class="pinSong" class="btn btn-primary" value="Pin"> </div>');
-                 
+                  $('#results').append(divid + '" class="track"><li>'+ trackname + '</li><li>' + trackartist + '</li><li class="url">' + trackhref +'</li><img src='+ trackimage +'> <input type="submit" id="p'+ i + '" class="pinSong" class="btn btn-primary" value="Pin"> </div>');
+                  }
                 } 
                 $(".pinSong").click(function(i){
-                    console.log($(this));
-                    console.log(i);
-                    console.log('this ya pin song');
+                    userPinSong = $(this).siblings('.url').contents().get(0).nodeValue;
+                    console.log(userPinSong);
+                    console.log($(this).siblings('.url').contents().get(0).nodeValue);
+                    // console.log($(this).closest('li[class]'));
+                    // console.log(i);
+                    console.log('pinned song');
+                    // $("#yourPinSong").html(userPinSong);
+                    
+                    $.ajax({
+                    url: userPinSong,
+                    headers: {
+                      'Authorization': 'Bearer ' + access_token
+                      },
+                    success: function(response) {
+                    console.log(response);
+                    var yourSongImage = response.album.images[0].url;
+                    var yourSongName = response.name;
+                    var yourSongArtist = response.artists[0].name;
+                    var resulted = "<img src='" + yourSongImage + "' width='150' height='150'>";
+                    var resulted2 = "<li>" + yourSongName + "</li><li>" + yourSongArtist + "</li>";
+                    console.log(resulted);
+                    $("#yourPinSongImage").html(resulted);
+                    $("#yourPinSongInfo").html(resulted2);
+          }});
+
                   });
 
                 }
@@ -208,22 +250,22 @@
         };
 
         //pull artist image example
-          $.ajax({
-              url: "https://api.spotify.com/v1/artists/0OdUWJ0sBjDrqHygGUXeCF",
-              headers: {
-                  'Authorization': 'Bearer ' + access_token
-                },
-              success: function(response) {
-              console.log(response);
-              var json = response;
-              var identify = json.images[0].url;
-              var pic = 'tania';
-              var result="";
-              // var album = albums;
-              result= result + "<img src='" + identify + "' width='300' height='300'>" + pic;
-              console.log('request made insert into html');
-              $("#results").html(result);
-          }});
+          // $.ajax({
+          //     url: "https://api.spotify.com/v1/artists/0OdUWJ0sBjDrqHygGUXeCF",
+          //     headers: {
+          //         'Authorization': 'Bearer ' + access_token
+          //       },
+          //     success: function(response) {
+          //     console.log(response);
+          //     var json = response;
+          //     var identify = json.images[0].url;
+          //     var pic = 'tania';
+          //     var result="";
+          //     // var album = albums;
+          //     result= result + "<img src='" + identify + "' width='300' height='300'>" + pic;
+          //     console.log('request made insert into html');
+          //     $("#results").html(result);
+          // }});
             
           } else {
               $('#login').show();
@@ -233,7 +275,7 @@
           
           document.getElementById('login-button').addEventListener('click', function() {
 
-            var client_id = '-'; // Your client id
+            var client_id = 'f77925f0471243af97142794fd2efe1d'; // Your client id
             var redirect_uri = 'http://localhost:8888'; // Your redirect uri
 
             var state = generateRandomString(16);
